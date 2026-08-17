@@ -79,6 +79,25 @@
             <button onclick="verificarPin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl text-sm shadow-md btn-animate">
                 Ingresar al Sistema
             </button>
+
+            <!-- SECCIÓN DE PRUEBAS / DESARROLLO -->
+            <div class="mt-6 border-t border-slate-100 pt-4">
+                <button onclick="document.getElementById('box-modo-prueba').classList.toggle('hidden')" class="text-xs font-bold text-slate-500 hover:text-blue-600 transition flex items-center justify-center gap-1 w-full btn-animate">
+                    ⚙️ Opciones de Desarrollo / Prueba
+                </button>
+
+                <div id="box-modo-prueba" class="hidden mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-left text-sm transition-all slide-up shadow-inner">
+                    <p class="font-bold text-slate-800 mb-1 flex items-center gap-1.5" id="lbl-info-semana-real">📅 Hoy es la semana -- del año.</p>
+                    <p class="text-xs text-slate-500 mb-4 leading-relaxed">Active esta casilla para simular que estamos en una fecha diferente. Esto permite ver cómo el sistema salta automáticamente de semana sin alterar los datos reales.</p>
+
+                    <label class="flex items-center gap-2 mb-3 cursor-pointer bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm hover:border-blue-400 transition-colors">
+                        <input type="checkbox" id="chk-test-mode" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                        <span class="font-bold text-slate-700 text-xs select-none">Forzar fecha del sistema</span>
+                    </label>
+
+                    <input type="date" id="inp-test-date" class="w-full p-2.5 border border-slate-300 rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500 shadow-sm text-slate-600">
+                </div>
+            </div>
         </section>
 
         <!-- 2. PANEL PRINCIPAL -->
@@ -107,19 +126,19 @@
                 <!-- SEMANA ACTUAL -->
                 <div class="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
                     <span id="lbl-tag-sem1" class="text-[11px] font-extrabold text-slate-500 uppercase px-2">Semana Actual:</span>
-                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-blue-900 shadow-sm" data-sheet="PROD1-SEM1">Producto 1</button>
-                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-sheet="PROD2-SEM1">Producto 2</button>
-                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-sheet="PROD3-SEM1">Producto 3</button>
-                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-sheet="PROD4-SEM1">Producto 4</button>
+                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-blue-900 shadow-sm" data-prod="PROD1" data-week="1">Producto 1</button>
+                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-prod="PROD2" data-week="1">Producto 2</button>
+                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-prod="PROD3" data-week="1">Producto 3</button>
+                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-prod="PROD4" data-week="1">Producto 4</button>
                 </div>
 
                 <!-- SEMANA SIGUIENTE -->
                 <div class="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
                     <span id="lbl-tag-sem2" class="text-[11px] font-extrabold text-slate-500 uppercase px-2">Semana Próxima:</span>
-                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-sheet="PROD1-SEM2">Producto 1</button>
-                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-sheet="PROD2-SEM2">Producto 2</button>
-                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-sheet="PROD3-SEM2">Producto 3</button>
-                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-sheet="PROD4-SEM2">Producto 4</button>
+                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-prod="PROD1" data-week="2">Producto 1</button>
+                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-prod="PROD2" data-week="2">Producto 2</button>
+                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-prod="PROD3" data-week="2">Producto 3</button>
+                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-prod="PROD4" data-week="2">Producto 4</button>
                 </div>
 
                 <!-- BOTÓN CONFIGURAR FECHAS -->
@@ -150,6 +169,13 @@
                         </tfoot>
                     </table>
                 </div>
+            </div>
+
+            <!-- BOTÓN AÑADIR CLIENTE REGISTRADO (SOLO EN MODO EDICIÓN) -->
+            <div id="box-add-cliente-plan" class="hidden flex justify-end mb-8">
+                <button onclick="abrirModalSeleccionarCliente()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-3 rounded-xl text-xs shadow-md transition-all btn-animate flex items-center gap-1.5">
+                    <span class="text-base leading-none">+</span> Añadir Cliente Registrado a esta Semana
+                </button>
             </div>
 
             <!-- SECCIÓN RESUMEN SEMANAL (ESTRUCTURA DEL EXCEL) -->
@@ -216,6 +242,22 @@
 
     </main>
 
+    <!-- MODAL SELECCIONAR CLIENTE EXISTENTE -->
+    <div id="modal-seleccionar-cliente" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 border border-slate-200 slide-up">
+            <h3 class="font-bold text-lg text-slate-800 mb-1">Añadir Cliente a la Hoja</h3>
+            <p class="text-xs text-slate-500 mb-4">Seleccione una empresa de la base de datos oficial:</p>
+            
+            <select id="select-cliente-existente" class="w-full p-3 border border-slate-300 rounded-xl text-sm font-bold text-slate-700 bg-white mb-5 outline-none focus:ring-2 focus:ring-emerald-500">
+            </select>
+            
+            <div class="flex justify-end gap-2">
+                <button onclick="document.getElementById('modal-seleccionar-cliente').classList.add('hidden')" class="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">Cancelar</button>
+                <button onclick="confirmarAddClientePlan()" class="px-5 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl shadow">Añadir a Tabla</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL CONFIGURAR FECHAS DE DÍAS -->
     <div id="modal-fechas" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 fade-in">
         <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 border border-slate-200 slide-up">
@@ -223,23 +265,23 @@
             <div class="space-y-3 mb-6">
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-1">Lunes:</label>
-                    <input type="text" id="inp-fecha-0" placeholder="Ej: 17/08" class="w-full p-2.5 border rounded-xl text-sm font-medium outline-none">
+                    <input type="text" id="inp-fecha-0" class="w-full p-2.5 border rounded-xl text-sm font-medium outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-1">Martes:</label>
-                    <input type="text" id="inp-fecha-1" placeholder="Ej: 18/08" class="w-full p-2.5 border rounded-xl text-sm font-medium outline-none">
+                    <input type="text" id="inp-fecha-1" class="w-full p-2.5 border rounded-xl text-sm font-medium outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-1">Miércoles:</label>
-                    <input type="text" id="inp-fecha-2" placeholder="Ej: 19/08" class="w-full p-2.5 border rounded-xl text-sm font-medium outline-none">
+                    <input type="text" id="inp-fecha-2" class="w-full p-2.5 border rounded-xl text-sm font-medium outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-1">Jueves:</label>
-                    <input type="text" id="inp-fecha-3" placeholder="Ej: 20/08" class="w-full p-2.5 border rounded-xl text-sm font-medium outline-none">
+                    <input type="text" id="inp-fecha-3" class="w-full p-2.5 border rounded-xl text-sm font-medium outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 mb-1">Viernes:</label>
-                    <input type="text" id="inp-fecha-4" placeholder="Ej: 21/08" class="w-full p-2.5 border rounded-xl text-sm font-medium outline-none">
+                    <input type="text" id="inp-fecha-4" class="w-full p-2.5 border rounded-xl text-sm font-medium outline-none">
                 </div>
             </div>
             <div class="flex justify-end gap-2">
@@ -259,12 +301,15 @@
         }
 
         const CLAVE_ACCESO = "sovenap";
-        let modoPlan = 'ver';
-        let hojaActiva = 'PROD1-SEM1';
-
         const CLIENTES_PREDETERMINADOS = ["RUI", "Granja Manolo", "Agropecuarios Salvador", "Filamentosa S.L", "Lázaro e Hijos"];
 
-        // CÁLCULO DINÁMICO DE SEMANAS Y FECHAS
+        // VARIABLES GLOBALES DINÁMICAS
+        let modoPlan = 'ver';
+        let numSem1, numSem2, keyW1, keyW2;
+        let defFechasSem1 = [], defFechasSem2 = [];
+        let hojaActiva = '';
+
+        // CÁLCULO DE NÚMERO DE SEMANA ISO
         function getISOWeekNumber(d) {
             const date = new Date(d.getTime());
             date.setHours(0, 0, 0, 0);
@@ -273,6 +318,7 @@
             return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
         }
 
+        // OBTENER LUNES DE LA SEMANA
         function getMondayOfWeek(d) {
             const date = new Date(d);
             const day = date.getDay();
@@ -280,6 +326,7 @@
             return new Date(date.setDate(diff));
         }
 
+        // GENERAR TEXTOS CORTOS DE FECHAS (DD/MM)
         function getFormattedDatesForWeek(monday) {
             const arr = [];
             for (let i = 0; i < 5; i++) {
@@ -292,16 +339,26 @@
             return arr;
         }
 
-        const hoy = new Date();
-        const lunesSem1 = getMondayOfWeek(hoy);
-        const lunesSem2 = new Date(lunesSem1);
-        lunesSem2.setDate(lunesSem1.getDate() + 7);
+        // FUNCIÓN CENTRAL PARA INICIALIZAR LA VENTANA DE TIEMPO
+        function inicializarFechasBase(fechaRef) {
+            const lunesSem1 = getMondayOfWeek(fechaRef);
+            const lunesSem2 = new Date(lunesSem1);
+            lunesSem2.setDate(lunesSem1.getDate() + 7);
 
-        const numSem1 = getISOWeekNumber(lunesSem1);
-        const numSem2 = getISOWeekNumber(lunesSem2);
+            const year1 = lunesSem1.getFullYear();
+            const year2 = lunesSem2.getFullYear();
 
-        const defFechasSem1 = getFormattedDatesForWeek(lunesSem1);
-        const defFechasSem2 = getFormattedDatesForWeek(lunesSem2);
+            numSem1 = getISOWeekNumber(lunesSem1);
+            numSem2 = getISOWeekNumber(lunesSem2);
+
+            keyW1 = `${year1}-W${numSem1}`;
+            keyW2 = `${year2}-W${numSem2}`;
+
+            defFechasSem1 = getFormattedDatesForWeek(lunesSem1);
+            defFechasSem2 = getFormattedDatesForWeek(lunesSem2);
+
+            hojaActiva = `PROD1-${keyW1}`; // Por defecto al iniciar
+        }
 
         // LEER CLIENTES REGISTRADOS DESDE cuentas_clientes
         async function getClientesRegistradosOficiales() {
@@ -350,15 +407,16 @@
 
             const clientesOficiales = await getClientesRegistradosOficiales();
 
+            // Aseguramos de que las tablas para LA SEMANA ACTUAL y LA PRÓXIMA existan en el objeto basándose en keyW1 y keyW2
             const hojasKeys = [
-                { key: "PROD1-SEM1", title: `PROGRAMACIÓN SEMANA ${numSem1} - PRODUCTO 1`, defDates: defFechasSem1 },
-                { key: "PROD2-SEM1", title: `PROGRAMACIÓN SEMANA ${numSem1} - PRODUCTO 2`, defDates: defFechasSem1 },
-                { key: "PROD3-SEM1", title: `PROGRAMACIÓN SEMANA ${numSem1} - PRODUCTO 3`, defDates: defFechasSem1 },
-                { key: "PROD4-SEM1", title: `PROGRAMACIÓN SEMANA ${numSem1} - PRODUCTO 4`, defDates: defFechasSem1 },
-                { key: "PROD1-SEM2", title: `PROGRAMACIÓN SEMANA ${numSem2} - PRODUCTO 1`, defDates: defFechasSem2 },
-                { key: "PROD2-SEM2", title: `PROGRAMACIÓN SEMANA ${numSem2} - PRODUCTO 2`, defDates: defFechasSem2 },
-                { key: "PROD3-SEM2", title: `PROGRAMACIÓN SEMANA ${numSem2} - PRODUCTO 3`, defDates: defFechasSem2 },
-                { key: "PROD4-SEM2", title: `PROGRAMACIÓN SEMANA ${numSem2} - PRODUCTO 4`, defDates: defFechasSem2 }
+                { key: `PROD1-${keyW1}`, title: `PROGRAMACIÓN SEMANA ${numSem1} - PRODUCTO 1`, defDates: defFechasSem1 },
+                { key: `PROD2-${keyW1}`, title: `PROGRAMACIÓN SEMANA ${numSem1} - PRODUCTO 2`, defDates: defFechasSem1 },
+                { key: `PROD3-${keyW1}`, title: `PROGRAMACIÓN SEMANA ${numSem1} - PRODUCTO 3`, defDates: defFechasSem1 },
+                { key: `PROD4-${keyW1}`, title: `PROGRAMACIÓN SEMANA ${numSem1} - PRODUCTO 4`, defDates: defFechasSem1 },
+                { key: `PROD1-${keyW2}`, title: `PROGRAMACIÓN SEMANA ${numSem2} - PRODUCTO 1`, defDates: defFechasSem2 },
+                { key: `PROD2-${keyW2}`, title: `PROGRAMACIÓN SEMANA ${numSem2} - PRODUCTO 2`, defDates: defFechasSem2 },
+                { key: `PROD3-${keyW2}`, title: `PROGRAMACIÓN SEMANA ${numSem2} - PRODUCTO 3`, defDates: defFechasSem2 },
+                { key: `PROD4-${keyW2}`, title: `PROGRAMACIÓN SEMANA ${numSem2} - PRODUCTO 4`, defDates: defFechasSem2 }
             ];
 
             hojasKeys.forEach(h => {
@@ -371,6 +429,7 @@
                     }
                 }
 
+                // Inyectar clientes registrados con valor 0 si son nuevos
                 let syncedClients = [];
                 clientesOficiales.forEach(cliNom => {
                     const existente = (data[h.key].clients || []).find(c => c.name.toUpperCase() === cliNom.toUpperCase());
@@ -406,14 +465,36 @@
             } catch(e){}
         }
 
-        // ACCESO
+        // ACCESO Y VERIFICACIÓN
         function verificarPin() {
             const val = document.getElementById('input-pin-acceso').value.trim().toLowerCase();
             if (val === CLAVE_ACCESO) {
+                
+                // VERIFICAR SI EL MODO DE PRUEBA ESTÁ ACTIVO
+                const testActive = document.getElementById('chk-test-mode').checked;
+                const testDateVal = document.getElementById('inp-test-date').value;
+
+                let refDate = new Date();
+                if (testActive && testDateVal) {
+                    refDate = new Date(testDateVal);
+                    sessionStorage.setItem('test_date_plan', testDateVal);
+                } else {
+                    sessionStorage.removeItem('test_date_plan');
+                }
+
+                // Generar fechas basadas en la fecha elegida o actual
+                inicializarFechasBase(refDate);
+
                 sessionStorage.setItem('sesion_plan_activa', 'true');
+                
                 document.getElementById('sec-login').classList.add('hidden');
                 document.getElementById('sec-planificacion').classList.remove('hidden');
                 document.getElementById('btn-logout').classList.remove('hidden');
+                
+                // Refrescar etiquetas visuales
+                document.getElementById('lbl-tag-sem1').textContent = `Semana ${numSem1}:`;
+                document.getElementById('lbl-tag-sem2').textContent = `Semana ${numSem2}:`;
+
                 renderTabla();
             } else {
                 alert('Contraseña incorrecta.');
@@ -422,10 +503,12 @@
 
         function cerrarSesion() {
             sessionStorage.removeItem('sesion_plan_activa');
+            sessionStorage.removeItem('test_date_plan');
             document.getElementById('sec-login').classList.remove('hidden');
             document.getElementById('sec-planificacion').classList.add('hidden');
             document.getElementById('btn-logout').classList.add('hidden');
             document.getElementById('input-pin-acceso').value = '';
+            document.getElementById('chk-test-mode').checked = false;
         }
 
         function setModo(modo) {
@@ -433,15 +516,18 @@
             const btnVis = document.getElementById('btn-modo-vis');
             const btnEdit = document.getElementById('btn-modo-edit');
             const btnFechas = document.getElementById('btn-config-fechas');
+            const boxAdd = document.getElementById('box-add-cliente-plan');
 
             if (modo === 'editar') {
                 btnEdit.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow-md";
                 btnVis.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-xs font-bold transition-all text-slate-300 hover:text-white";
                 btnFechas.classList.remove('hidden');
+                boxAdd.classList.remove('hidden');
             } else {
                 btnVis.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow-md";
                 btnEdit.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-xs font-bold transition-all text-slate-300 hover:text-white";
                 btnFechas.classList.add('hidden');
+                boxAdd.classList.add('hidden');
             }
             renderTabla();
         }
@@ -498,8 +584,13 @@
 
                 totalCamionesGlobal += sumRow;
 
+                // Solo permitimos eliminar de la hoja si está en modo edición
+                let colCliente = modoPlan === 'editar'
+                    ? `<div class="flex justify-between items-center gap-1 font-bold text-slate-800"><span>${cli.name}</span><button data-cidx="${cIdx}" class="btn-del-cli text-red-500 hover:text-red-700 font-bold px-1 text-sm transition-colors">✕</button></div>`
+                    : `<strong class="text-slate-800">${cli.name}</strong>`;
+
                 tr.innerHTML = `
-                    <td class="p-3.5 font-bold border-r border-slate-200 bg-slate-50/50 text-slate-800">${cli.name}</td>
+                    <td class="p-3.5 font-bold border-r border-slate-200 bg-slate-50/50 text-slate-800">${colCliente}</td>
                     ${celdas}
                     <td class="p-3.5 text-center font-extrabold bg-blue-50 text-blue-900 border-r border-slate-200 text-base">${sumRow}</td>
                     <td class="p-3.5 text-center font-extrabold bg-amber-50 text-amber-900 text-base">${sumRow * 25} TM</td>
@@ -539,10 +630,10 @@
             const diasNombres = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 
             // Cálculo Semana 1
-            const fechasSem1 = dataAll['PROD1-SEM1']?.dates || defFechasSem1;
+            const fechasSem1 = dataAll[`PROD1-${keyW1}`]?.dates || defFechasSem1;
             let sumaDiaSem1 = [0, 0, 0, 0, 0];
-            ['PROD1-SEM1', 'PROD2-SEM1', 'PROD3-SEM1', 'PROD4-SEM1'].forEach(k => {
-                const hoja = dataAll[k];
+            ['PROD1', 'PROD2', 'PROD3', 'PROD4'].forEach(p => {
+                const hoja = dataAll[`${p}-${keyW1}`];
                 if (hoja && hoja.clients) {
                     hoja.clients.forEach(c => {
                         (c.vals || []).forEach((v, idx) => {
@@ -567,10 +658,10 @@
             document.getElementById('td-total-resumen-sem1').textContent = totalSem1;
 
             // Cálculo Semana 2
-            const fechasSem2 = dataAll['PROD1-SEM2']?.dates || defFechasSem2;
+            const fechasSem2 = dataAll[`PROD1-${keyW2}`]?.dates || defFechasSem2;
             let sumaDiaSem2 = [0, 0, 0, 0, 0];
-            ['PROD1-SEM2', 'PROD2-SEM2', 'PROD3-SEM2', 'PROD4-SEM2'].forEach(k => {
-                const hoja = dataAll[k];
+            ['PROD1', 'PROD2', 'PROD3', 'PROD4'].forEach(p => {
+                const hoja = dataAll[`${p}-${keyW2}`];
                 if (hoja && hoja.clients) {
                     hoja.clients.forEach(c => {
                         (c.vals || []).forEach((v, idx) => {
@@ -619,19 +710,70 @@
                 await saveSheet(hojaActiva, sheet);
                 renderTabla();
             }
+            if (e.target.classList.contains('btn-del-cli')) {
+                const cIdx = Number(e.target.dataset.cidx);
+                if (confirm('¿Quitar este cliente de la hoja de esta semana? NOTA: Si lo eliminas, su fila desaparecerá hasta que lo vuelvas a añadir.')) {
+                    sheet.clients.splice(cIdx, 1);
+                    await saveSheet(hojaActiva, sheet);
+                    renderTabla();
+                }
+            }
         });
 
-        // CAMBIO DE PESTAÑAS
+        // CAMBIO DE PESTAÑAS (LEYENDO LOS ATRIBUTOS DINÁMICOS)
         document.querySelectorAll('.tab-plan-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('.tab-plan-btn').forEach(b => {
                     b.className = "tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80";
                 });
                 e.target.className = "tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-blue-900 shadow-sm";
-                hojaActiva = e.target.dataset.sheet;
+                
+                const prod = e.target.dataset.prod;
+                const week = e.target.dataset.week; // "1" o "2"
+                hojaActiva = `${prod}-${week === '1' ? keyW1 : keyW2}`;
+                
                 renderTabla();
             });
         });
+
+        // MODAL SELECCIONAR CLIENTE REGISTRADO
+        async function abrirModalSeleccionarCliente() {
+            const clientesOficiales = await getClientesRegistradosOficiales();
+            const dataAll = await getPlanificacionData();
+            const sheet = dataAll[hojaActiva];
+            const yaEnHoja = (sheet?.clients || []).map(c => c.name.toUpperCase());
+
+            const select = document.getElementById('select-cliente-existente');
+            select.innerHTML = '';
+
+            const disponibles = clientesOficiales.filter(c => !yaEnHoja.includes(c.toUpperCase()));
+
+            if (disponibles.length === 0) {
+                select.innerHTML = '<option value="">Todos los clientes registrados ya están en esta hoja</option>';
+            } else {
+                disponibles.forEach(c => {
+                    select.innerHTML += `<option value="${c}">${c}</option>`;
+                });
+            }
+
+            document.getElementById('modal-seleccionar-cliente').classList.remove('hidden');
+        }
+
+        async function confirmarAddClientePlan() {
+            const select = document.getElementById('select-cliente-existente');
+            const clienteSeleccionado = select.value;
+
+            if (!clienteSeleccionado) return;
+
+            const dataAll = await getPlanificacionData();
+            const sheet = dataAll[hojaActiva];
+            if (sheet) {
+                sheet.clients.push({ name: clienteSeleccionado, vals: [0, 0, 0, 0, 0], green: [false, false, false, false, false] });
+                await saveSheet(hojaActiva, sheet);
+                document.getElementById('modal-seleccionar-cliente').classList.add('hidden');
+                renderTabla();
+            }
+        }
 
         // MODAL CONFIGURAR FECHAS
         async function abrirModalFechas() {
@@ -661,11 +803,38 @@
             }
         }
 
-        // INICIALIZACIÓN
+        // INICIALIZACIÓN GENERAL AL CARGAR LA PÁGINA
         window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('lbl-tag-sem1').textContent = `Semana ${numSem1}:`;
-            document.getElementById('lbl-tag-sem2').textContent = `Semana ${numSem2}:`;
+            
+            // 1. Mostrar la semana real en el panel de pruebas
+            const hoyReal = new Date();
+            const semanaReal = getISOWeekNumber(hoyReal);
+            document.getElementById('lbl-info-semana-real').innerHTML = `📅 Hoy es la semana <strong>${semanaReal}</strong> del año.`;
 
+            // 2. Controlar si hay sesión activa para entrar directo
+            if (sessionStorage.getItem('sesion_plan_activa') === 'true') {
+                
+                // Si el usuario guardó una fecha de prueba, la recuperamos
+                let refDate = new Date();
+                const savedTestDate = sessionStorage.getItem('test_date_plan');
+                if (savedTestDate) {
+                    refDate = new Date(savedTestDate);
+                }
+
+                // Generar los parámetros y las claves (ej: W34 y W35) basándonos en la fecha correspondiente
+                inicializarFechasBase(refDate);
+
+                document.getElementById('sec-login').classList.add('hidden');
+                document.getElementById('sec-planificacion').classList.remove('hidden');
+                document.getElementById('btn-logout').classList.remove('hidden');
+                
+                document.getElementById('lbl-tag-sem1').textContent = `Semana ${numSem1}:`;
+                document.getElementById('lbl-tag-sem2').textContent = `Semana ${numSem2}:`;
+
+                renderTabla();
+            }
+
+            // 3. Botón de Modo Oscuro
             const btnDark = document.getElementById('btn-toggle-dark');
             btnDark.addEventListener('click', () => {
                 document.body.classList.toggle('dark-theme');
@@ -677,13 +846,6 @@
             if (localStorage.getItem('plan_dark_mode') === 'true') {
                 document.body.classList.add('dark-theme');
                 btnDark.innerHTML = '☀️ <span class="hidden sm:inline">Modo Claro</span>';
-            }
-
-            if (sessionStorage.getItem('sesion_plan_activa') === 'true') {
-                document.getElementById('sec-login').classList.add('hidden');
-                document.getElementById('sec-planificacion').classList.remove('hidden');
-                document.getElementById('btn-logout').classList.remove('hidden');
-                renderTabla();
             }
         });
     </script>
