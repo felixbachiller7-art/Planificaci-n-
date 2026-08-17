@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Planificación Semanal de Pedidos</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .min-panel-height { min-height: 520px; }
+        input, button { touch-action: manipulation; }
+
+        /* ANIMACIONES */
+        .fade-in { animation: fadeIn 0.25s ease-in-out; }
+        .slide-up { animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+        .btn-animate { transition: all 0.2s ease-in-out; }
+        .btn-animate:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .btn-animate:active { transform: translateY(0); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* CELDAS PENDIENTES (VERDE) */
+        .cell-green-plan { background-color: #d1fae5 !important; border-color: #34d399 !important; color: #065f46 !important; font-weight: bold; }
+
+        /* MODO OSCURO */
+        body.dark-theme { background-color: #0b1329 !important; color: #e2e8f0 !important; }
+        body.dark-theme header { background-color: #060913 !important; border-bottom: 1px solid #1e293b; }
+        body.dark-theme .bg-white { background-color: #111b33 !important; border-color: #1e293b !important; color: #e2e8f0 !important; }
+        body.dark-theme .bg-slate-100 { background-color: #0b1329 !important; }
+        body.dark-theme .bg-slate-50, body.dark-theme .bg-slate-200 { background-color: #162241 !important; color: #e2e8f0 !important; }
+        body.dark-theme .bg-slate-300 { background-color: #1e293b !important; color: #cbd5e1 !important; }
+        body.dark-theme input, body.dark-theme select { background-color: #162241 !important; color: #ffffff !important; border-color: #2a3d6c !important; }
+        body.dark-theme table th { background-color: #0f1c3f !important; color: #f8fafc !important; border-color: #1e293b !important; }
+        body.dark-theme table td { border-color: #1e293b !important; color: #e2e8f0 !important; }
+        body.dark-theme .text-slate-800, body.dark-theme .text-slate-700 { color: #f1f5f9 !important; }
+        body.dark-theme .cell-green-plan { background-color: #064e3b !important; border-color: #059669 !important; color: #6ee7b7 !important; }
+        body.dark-theme .bg-blue-50 { background-color: #1e3a8a !important; color: #93c5fd !important; }
+        body.dark-theme .bg-amber-50 { background-color: #78350f !important; color: #fde68a !important; }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans min-h-screen flex flex-col text-slate-800">
+
+    <!-- ENCABEZADO -->
+    <header class="bg-slate-900 text-white p-4 shadow-md sticky top-0 z-40 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">📅</span>
+                <div>
+                    <h1 class="text-xl font-bold leading-tight tracking-wide">Planificación Semanal</h1>
+                    <p class="text-slate-400 text-xs font-medium">Asignación de Camiones (25 TM / Camión)</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="btn-toggle-dark" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition shadow flex items-center gap-1.5 btn-animate">
+                    🌙 <span class="hidden sm:inline">Modo Oscuro</span>
+                </button>
+                <button id="btn-logout" onclick="cerrarSesion()" class="hidden bg-red-600 hover:bg-red-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition shadow btn-animate">
+                    Bloquear
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl w-full mx-auto p-3 sm:p-4 flex-1">
+
+        <!-- 1. ACCESO PIN -->
+        <section id="sec-login" class="my-10 max-w-sm mx-auto bg-white p-8 rounded-3xl shadow-xl border border-slate-200 text-center slide-up">
+            <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-sm">
+                🔒
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 mb-1">Acceso Planificación</h2>
+            <p class="text-xs text-slate-500 mb-6">Introduzca la contraseña para acceder al panel:</p>
+            
+            <input type="password" id="input-pin-acceso" placeholder="Contraseña" onkeydown="if(event.key==='Enter') verificarPin()" class="w-full p-3.5 border border-slate-300 rounded-xl text-sm mb-4 outline-none focus:ring-2 focus:ring-blue-500 font-medium text-center shadow-sm">
+            
+            <button onclick="verificarPin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl text-sm shadow-md btn-animate">
+                Ingresar al Sistema
+            </button>
+        </section>
+
+        <!-- 2. PANEL PRINCIPAL -->
+        <section id="sec-planificacion" class="hidden my-4 slide-up">
+            
+            <!-- BARRA SUPERIOR -->
+            <div class="bg-slate-800 text-white p-5 rounded-2xl mb-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-lg border border-slate-700">
+                <div>
+                    <h2 class="font-bold text-xl tracking-wide flex items-center gap-2" id="lbl-plan-titulo-hoja">PROGRAMACIÓN SEMANAL</h2>
+                    <p class="text-xs text-slate-300 mt-0.5">🟢 En Modo Edición pulse 🟢 para marcar Pendiente de Confirmación</p>
+                </div>
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <div class="flex bg-slate-900 p-1.5 rounded-xl border border-slate-700 w-full sm:w-auto shadow-inner">
+                        <button id="btn-modo-vis" onclick="setModo('ver')" class="flex-1 sm:flex-none px-5 py-2 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow-md">
+                            👁️ Visualizar
+                        </button>
+                        <button id="btn-modo-edit" onclick="setModo('editar')" class="flex-1 sm:flex-none px-5 py-2 rounded-lg text-xs font-bold transition-all text-slate-300 hover:text-white">
+                            ✏️ Modo Edición
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SELECTOR DINÁMICO DE SEMANAS Y PRODUCTOS -->
+            <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 mb-5 flex flex-wrap gap-4 items-center">
+                <!-- SEMANA ACTUAL -->
+                <div class="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+                    <span id="lbl-tag-sem1" class="text-[11px] font-extrabold text-slate-500 uppercase px-2">Semana Actual:</span>
+                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-blue-900 shadow-sm" data-sheet="PROD1-SEM1">Producto 1</button>
+                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-sheet="PROD2-SEM1">Producto 2</button>
+                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-sheet="PROD3-SEM1">Producto 3</button>
+                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-sheet="PROD4-SEM1">Producto 4</button>
+                </div>
+
+                <!-- SEMANA SIGUIENTE -->
+                <div class="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+                    <span id="lbl-tag-sem2" class="text-[11px] font-extrabold text-slate-500 uppercase px-2">Semana Próxima:</span>
+                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-sheet="PROD1-SEM2">Producto 1</button>
+                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-sheet="PROD2-SEM2">Producto 2</button>
+                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-sheet="PROD3-SEM2">Producto 3</button>
+                    <button class="tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80" data-sheet="PROD4-SEM2">Producto 4</button>
+                </div>
+
+                <!-- BOTÓN CONFIGURAR FECHAS -->
+                <button id="btn-config-fechas" onclick="abrirModalFechas()" class="hidden ml-auto bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs px-3.5 py-2 rounded-xl transition-all shadow-sm btn-animate">
+                    🗓️ Cambiar Fechas de Días
+                </button>
+            </div>
+
+            <!-- TABLA DE PLANIFICACIÓN -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                        <thead class="bg-slate-900 text-white font-bold text-[11px] uppercase tracking-wider">
+                            <tr>
+                                <th class="p-4 w-52 border-r border-slate-800">DÍA / CLIENTE</th>
+                                <th id="th-f1" class="p-4 text-center border-r border-slate-800 w-28">LUNES</th>
+                                <th id="th-f2" class="p-4 text-center border-r border-slate-800 w-28">MARTES</th>
+                                <th id="th-f3" class="p-4 text-center border-r border-slate-800 w-28">MIÉRCOLES</th>
+                                <th id="th-f4" class="p-4 text-center border-r border-slate-800 w-28">JUEVES</th>
+                                <th id="th-f5" class="p-4 text-center border-r border-slate-800 w-28">VIERNES</th>
+                                <th class="p-4 text-center bg-blue-950 text-blue-200 border-r border-slate-800 w-32">TOTAL CAMIONES</th>
+                                <th class="p-4 text-center bg-amber-950 text-amber-200 w-32">TOTAL TM</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-planificacion-body" class="divide-y divide-slate-200 font-medium">
+                        </tbody>
+                        <tfoot id="tabla-planificacion-foot" class="bg-slate-100 font-extrabold border-t-2 border-slate-300">
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SECCIÓN RESUMEN SEMANAL (ESTRUCTURA DEL EXCEL) -->
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 mb-6 slide-up">
+                <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+                    <span class="text-2xl">📊</span>
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-800">Resumen Semanal</h3>
+                        <p class="text-xs text-slate-500 font-medium">Total de camiones programados agrupando todos los tipos de producto</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- TABLA SEMANA 1 -->
+                    <div class="rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                        <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                            <thead>
+                                <tr class="bg-slate-800 text-white font-bold text-xs uppercase">
+                                    <th class="p-3.5 border-r border-slate-700">Semana</th>
+                                    <th id="lbl-resumen-numsem1" class="p-3.5 text-center text-amber-300 font-extrabold text-sm">--</th>
+                                </tr>
+                                <tr class="bg-slate-100 text-slate-600 font-bold text-[11px] uppercase border-b border-slate-200">
+                                    <th class="p-3 border-r border-slate-200 w-1/2">Día</th>
+                                    <th class="p-3 text-center">Total de camiones (Todos los tipos)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-resumen-sem1-body" class="divide-y divide-slate-200 font-semibold text-slate-700">
+                            </tbody>
+                            <tfoot>
+                                <tr class="bg-blue-50 font-extrabold text-blue-950 border-t-2 border-slate-300">
+                                    <td class="p-3.5 border-r border-slate-200">Total semanal</td>
+                                    <td id="td-total-resumen-sem1" class="p-3.5 text-center text-base font-black text-blue-700">0</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- TABLA SEMANA 2 -->
+                    <div class="rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                        <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                            <thead>
+                                <tr class="bg-slate-800 text-white font-bold text-xs uppercase">
+                                    <th class="p-3.5 border-r border-slate-700">Semana</th>
+                                    <th id="lbl-resumen-numsem2" class="p-3.5 text-center text-amber-300 font-extrabold text-sm">--</th>
+                                </tr>
+                                <tr class="bg-slate-100 text-slate-600 font-bold text-[11px] uppercase border-b border-slate-200">
+                                    <th class="p-3 border-r border-slate-200 w-1/2">Día</th>
+                                    <th class="p-3 text-center">Total de camiones (Todos los tipos)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-resumen-sem2-body" class="divide-y divide-slate-200 font-semibold text-slate-700">
+                            </tbody>
+                            <tfoot>
+                                <tr class="bg-blue-50 font-extrabold text-blue-950 border-t-2 border-slate-300">
+                                    <td class="p-3.5 border-r border-slate-200">Total semanal</td>
+                                    <td id="td-total-resumen-sem2" class="p-3.5 text-center text-base font-black text-blue-700">0</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL CONFIGURAR FECHAS DE DÍAS -->
+    <div id="modal-fechas" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 fade-in">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 border border-slate-200 slide-up">
+            <h3 class="font-bold text-lg text-slate-800 mb-4">Editar Fechas (Lunes a Viernes)</h3>
+            <div class="space-y-3 mb-6">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Lunes:</label>
+                    <input type="text" id="inp-fecha-0" placeholder="Ej: 17/08" class="w-full p-2.5 border rounded-xl text-sm font-medium outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Martes:</label>
+                    <input type="text" id="inp-fecha-1" placeholder="Ej: 18/08" class="w-full p-2.5 border rounded-xl text-sm font-medium outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Miércoles:</label>
+                    <input type="text" id="inp-fecha-2" placeholder="Ej: 19/08" class="w-full p-2.5 border rounded-xl text-sm font-medium outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Jueves:</label>
+                    <input type="text" id="inp-fecha-3" placeholder="Ej: 20/08" class="w-full p-2.5 border rounded-xl text-sm font-medium outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Viernes:</label>
+                    <input type="text" id="inp-fecha-4" placeholder="Ej: 21/08" class="w-full p-2.5 border rounded-xl text-sm font-medium outline-none">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button onclick="document.getElementById('modal-fechas').classList.add('hidden')" class="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl">Cancelar</button>
+                <button onclick="guardarFechasColumnas()" class="px-5 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl shadow">Guardar Fechas</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://imwhfiznaetndbyuxkkx.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_ZK0_eX6sshhN7l-TP4O9aA_euDhcNsr';
+
+        let dbClient = null;
+        if (window.supabase && window.supabase.createClient) {
+            dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+
+        const CLAVE_ACCESO = "sovenap";
+        let modoPlan = 'ver';
+        let hojaActiva = 'PROD1-SEM1';
+
+        const CLIENTES_PREDETERMINADOS = ["RUI", "Granja Manolo", "Agropecuarios Salvador", "Filamentosa S.L", "Lázaro e Hijos"];
+
+        // CÁLCULO DINÁMICO DE SEMANAS Y FECHAS
+        function getISOWeekNumber(d) {
+            const date = new Date(d.getTime());
+            date.setHours(0, 0, 0, 0);
+            date.setDate(date.getDate() + 3 - ((date.getDay() + 6) % 7));
+            const week1 = new Date(date.getFullYear(), 0, 4);
+            return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
+        }
+
+        function getMondayOfWeek(d) {
+            const date = new Date(d);
+            const day = date.getDay();
+            const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+            return new Date(date.setDate(diff));
+        }
+
+        function getFormattedDatesForWeek(monday) {
+            const arr = [];
+            for (let i = 0; i < 5; i++) {
+                const temp = new Date(monday);
+                temp.setDate(monday.getDate() + i);
+                const dd = String(temp.getDate()).padStart(2, '0');
+                const mm = String(temp.getMonth() + 1).padStart(2, '0');
+                arr.push(`${dd}/${mm}`);
+            }
+            return arr;
+        }
+
+        const hoy = new Date();
+        const lunesSem1 = getMondayOfWeek(hoy);
+        const lunesSem2 = new Date(lunesSem1);
+        lunesSem2.setDate(lunesSem1.getDate() + 7);
+
+        const numSem1 = getISOWeekNumber(lunesSem1);
+        const numSem2 = getISOWeekNumber(lunesSem2);
+
+        const defFechasSem1 = getFormattedDatesForWeek(lunesSem1);
+        const defFechasSem2 = getFormattedDatesForWeek(lunesSem2);
+
+        // LEER CLIENTES REGISTRADOS DESDE cuentas_clientes
+        async function getClientesRegistradosOficiales() {
+            let list = [...CLIENTES_PREDETERMINADOS];
+            if (!dbClient) return list;
+            try {
+                const res = await Promise.race([
+                    dbClient.from('cuentas_clientes').select('nombre'),
+                    new Promise(r => setTimeout(() => r({ data: null, error: 'timeout' }), 2000))
+                ]);
+                if (res && !res.error && Array.isArray(res.data) && res.data.length > 0) {
+                    list = res.data.map(r => r.nombre.trim());
+                }
+                return list;
+            } catch(e) { return list; }
+        }
+
+        // CARGAR PLANIFICACIÓN Y AUTO-SINCRONIZAR
+        async function getPlanificacionData() {
+            let data = {};
+            try {
+                const local = localStorage.getItem('local_planificacion_app');
+                if (local) data = JSON.parse(local);
+            } catch(e){}
+
+            if (dbClient) {
+                try {
+                    const res = await Promise.race([
+                        dbClient.from('planificacion_pedidos').select('*'),
+                        new Promise(r => setTimeout(() => r({ data: null, error: 'timeout' }), 2000))
+                    ]);
+                    if (res && !res.error && Array.isArray(res.data) && res.data.length > 0) {
+                        res.data.forEach(row => {
+                            if (row.sheet_key) {
+                                data[row.sheet_key] = {
+                                    title: row.title,
+                                    dates: row.dates,
+                                    clients: row.clients
+                                };
+                            }
+                        });
+                        localStorage.setItem('local_planificacion_app', JSON.stringify(data));
+                    }
+                } catch(e) {}
+            }
+
+            const clientesOficiales = await getClientesRegistradosOficiales();
+
+            const hojasKeys = [
+                { key: "PROD1-SEM1", title: `PROGRAMACIÓN SEMANA ${numSem1} - PRODUCTO 1`, defDates: defFechasSem1 },
+                { key: "PROD2-SEM1", title: `PROGRAMACIÓN SEMANA ${numSem1} - PRODUCTO 2`, defDates: defFechasSem1 },
+                { key: "PROD3-SEM1", title: `PROGRAMACIÓN SEMANA ${numSem1} - PRODUCTO 3`, defDates: defFechasSem1 },
+                { key: "PROD4-SEM1", title: `PROGRAMACIÓN SEMANA ${numSem1} - PRODUCTO 4`, defDates: defFechasSem1 },
+                { key: "PROD1-SEM2", title: `PROGRAMACIÓN SEMANA ${numSem2} - PRODUCTO 1`, defDates: defFechasSem2 },
+                { key: "PROD2-SEM2", title: `PROGRAMACIÓN SEMANA ${numSem2} - PRODUCTO 2`, defDates: defFechasSem2 },
+                { key: "PROD3-SEM2", title: `PROGRAMACIÓN SEMANA ${numSem2} - PRODUCTO 3`, defDates: defFechasSem2 },
+                { key: "PROD4-SEM2", title: `PROGRAMACIÓN SEMANA ${numSem2} - PRODUCTO 4`, defDates: defFechasSem2 }
+            ];
+
+            hojasKeys.forEach(h => {
+                if (!data[h.key]) {
+                    data[h.key] = { title: h.title, dates: h.defDates, clients: [] };
+                } else {
+                    data[h.key].title = h.title;
+                    if (!data[h.key].dates || data[h.key].dates.length !== 5) {
+                        data[h.key].dates = h.defDates;
+                    }
+                }
+
+                let syncedClients = [];
+                clientesOficiales.forEach(cliNom => {
+                    const existente = (data[h.key].clients || []).find(c => c.name.toUpperCase() === cliNom.toUpperCase());
+                    if (existente) {
+                        syncedClients.push(existente);
+                    } else {
+                        syncedClients.push({
+                            name: cliNom,
+                            vals: [0, 0, 0, 0, 0],
+                            green: [false, false, false, false, false]
+                        });
+                    }
+                });
+                data[h.key].clients = syncedClients;
+            });
+
+            return data;
+        }
+
+        async function saveSheet(sheetKey, sheetObj) {
+            let dataAll = await getPlanificacionData();
+            dataAll[sheetKey] = sheetObj;
+            try { localStorage.setItem('local_planificacion_app', JSON.stringify(dataAll)); } catch(e){}
+
+            if (!dbClient) return;
+            try {
+                await dbClient.from('planificacion_pedidos').upsert([{
+                    sheet_key: sheetKey,
+                    title: sheetObj.title,
+                    dates: sheetObj.dates,
+                    clients: sheetObj.clients
+                }]);
+            } catch(e){}
+        }
+
+        // ACCESO
+        function verificarPin() {
+            const val = document.getElementById('input-pin-acceso').value.trim().toLowerCase();
+            if (val === CLAVE_ACCESO) {
+                sessionStorage.setItem('sesion_plan_activa', 'true');
+                document.getElementById('sec-login').classList.add('hidden');
+                document.getElementById('sec-planificacion').classList.remove('hidden');
+                document.getElementById('btn-logout').classList.remove('hidden');
+                renderTabla();
+            } else {
+                alert('Contraseña incorrecta.');
+            }
+        }
+
+        function cerrarSesion() {
+            sessionStorage.removeItem('sesion_plan_activa');
+            document.getElementById('sec-login').classList.remove('hidden');
+            document.getElementById('sec-planificacion').classList.add('hidden');
+            document.getElementById('btn-logout').classList.add('hidden');
+            document.getElementById('input-pin-acceso').value = '';
+        }
+
+        function setModo(modo) {
+            modoPlan = modo;
+            const btnVis = document.getElementById('btn-modo-vis');
+            const btnEdit = document.getElementById('btn-modo-edit');
+            const btnFechas = document.getElementById('btn-config-fechas');
+
+            if (modo === 'editar') {
+                btnEdit.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow-md";
+                btnVis.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-xs font-bold transition-all text-slate-300 hover:text-white";
+                btnFechas.classList.remove('hidden');
+            } else {
+                btnVis.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-xs font-bold transition-all bg-blue-600 text-white shadow-md";
+                btnEdit.className = "flex-1 sm:flex-none px-5 py-2 rounded-lg text-xs font-bold transition-all text-slate-300 hover:text-white";
+                btnFechas.classList.add('hidden');
+            }
+            renderTabla();
+        }
+
+        // RENDERIZADO DE TABLA PRINCIPAL Y RESUMEN
+        async function renderTabla() {
+            const dataAll = await getPlanificacionData();
+            const sheet = dataAll[hojaActiva] || { title: hojaActiva, dates: ["-","-","-","-","-"], clients: [] };
+            
+            document.getElementById('lbl-plan-titulo-hoja').textContent = sheet.title;
+
+            sheet.dates.forEach((d, idx) => {
+                const th = document.getElementById(`th-f${idx + 1}`);
+                if (th) th.textContent = `${["LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES"][idx]} ${d}`;
+            });
+
+            const tbody = document.getElementById('tabla-planificacion-body');
+            tbody.innerHTML = '';
+
+            let sumaDia = [0, 0, 0, 0, 0];
+            let totalCamionesGlobal = 0;
+
+            sheet.clients.forEach((cli, cIdx) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-200";
+                let sumRow = 0;
+                let celdas = '';
+
+                cli.vals.forEach((v, dIdx) => {
+                    const num = Number(v) || 0;
+                    sumRow += num;
+                    sumaDia[dIdx] += num;
+                    const isGreen = cli.green ? cli.green[dIdx] : false;
+                    const greenCls = isGreen ? 'cell-green-plan' : '';
+
+                    if (modoPlan === 'editar') {
+                        celdas += `
+                            <td class="p-2.5 text-center border-r border-slate-200 ${greenCls}">
+                                <div class="flex items-center justify-center gap-1">
+                                    <input type="number" min="0" data-cidx="${cIdx}" data-didx="${dIdx}" value="${num}" class="input-plan-val w-12 text-center p-1.5 border border-slate-300 rounded-lg text-xs font-bold bg-white outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                                    <button data-cidx="${cIdx}" data-didx="${dIdx}" class="btn-toggle-green text-[10px] p-1.5 rounded-lg font-bold border transition-all shadow-sm ${isGreen ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-slate-100 text-slate-500 hover:bg-emerald-100'}">🟢</button>
+                                </div>
+                            </td>
+                        `;
+                    } else {
+                        celdas += `
+                            <td class="p-3.5 text-center font-bold text-slate-800 border-r border-slate-200 ${greenCls}">
+                                ${num > 0 ? num : '-'}
+                                ${isGreen ? '<span class="text-[10px] block text-emerald-700 font-extrabold mt-0.5">(Pendiente)</span>' : ''}
+                            </td>
+                        `;
+                    }
+                });
+
+                totalCamionesGlobal += sumRow;
+
+                tr.innerHTML = `
+                    <td class="p-3.5 font-bold border-r border-slate-200 bg-slate-50/50 text-slate-800">${cli.name}</td>
+                    ${celdas}
+                    <td class="p-3.5 text-center font-extrabold bg-blue-50 text-blue-900 border-r border-slate-200 text-base">${sumRow}</td>
+                    <td class="p-3.5 text-center font-extrabold bg-amber-50 text-amber-900 text-base">${sumRow * 25} TM</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Totales de pie de tabla
+            const tfoot = document.getElementById('tabla-planificacion-foot');
+            let footDiasCamiones = sumaDia.map(s => `<td class="p-3.5 text-center text-slate-800 border-r border-slate-300 bg-slate-200">${s}</td>`).join('');
+            let footDiasTM = sumaDia.map(s => `<td class="p-3.5 text-center border-r border-slate-400 font-extrabold">${s * 25}</td>`).join('');
+
+            tfoot.innerHTML = `
+                <tr class="border-b border-slate-300">
+                    <td class="p-3.5 text-slate-900 border-r border-slate-300 uppercase">TOTAL CAMIONES</td>
+                    ${footDiasCamiones}
+                    <td class="p-3.5 text-center text-blue-950 bg-blue-200 border-r border-slate-300 text-base">${totalCamionesGlobal}</td>
+                    <td class="p-3.5 text-center text-amber-950 bg-amber-200 text-base">${totalCamionesGlobal * 25} TM</td>
+                </tr>
+                <tr class="bg-slate-300 text-slate-900">
+                    <td class="p-3.5 border-r border-slate-400 font-extrabold uppercase">TOTAL TM (x25)</td>
+                    ${footDiasTM}
+                    <td class="p-3.5 text-center bg-blue-300 font-extrabold border-r border-slate-400 text-base">${totalCamionesGlobal * 25} TM</td>
+                    <td class="p-3.5 text-center bg-amber-300 font-extrabold text-base">${totalCamionesGlobal * 25} TM</td>
+                </tr>
+            `;
+
+            // RENDERIZAR RESUMEN SEMANAL DINÁMICO
+            renderResumenSemanal(dataAll);
+        }
+
+        // RENDERIZADO DEL RESUMEN SEMANAL (TODOS LOS PRODUCTOS AGRUPADOS)
+        function renderResumenSemanal(dataAll) {
+            document.getElementById('lbl-resumen-numsem1').textContent = `${numSem1}`;
+            document.getElementById('lbl-resumen-numsem2').textContent = `${numSem2}`;
+
+            const diasNombres = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+
+            // Cálculo Semana 1
+            const fechasSem1 = dataAll['PROD1-SEM1']?.dates || defFechasSem1;
+            let sumaDiaSem1 = [0, 0, 0, 0, 0];
+            ['PROD1-SEM1', 'PROD2-SEM1', 'PROD3-SEM1', 'PROD4-SEM1'].forEach(k => {
+                const hoja = dataAll[k];
+                if (hoja && hoja.clients) {
+                    hoja.clients.forEach(c => {
+                        (c.vals || []).forEach((v, idx) => {
+                            sumaDiaSem1[idx] += (Number(v) || 0);
+                        });
+                    });
+                }
+            });
+
+            const tbodySem1 = document.getElementById('tabla-resumen-sem1-body');
+            tbodySem1.innerHTML = '';
+            let totalSem1 = 0;
+            sumaDiaSem1.forEach((totalDia, idx) => {
+                totalSem1 += totalDia;
+                tbodySem1.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="p-3 border-r border-slate-200">${diasNombres[idx]} ${fechasSem1[idx]}</td>
+                        <td class="p-3 text-center font-bold ${totalDia > 0 ? 'text-blue-700' : 'text-slate-400'}">${totalDia}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('td-total-resumen-sem1').textContent = totalSem1;
+
+            // Cálculo Semana 2
+            const fechasSem2 = dataAll['PROD1-SEM2']?.dates || defFechasSem2;
+            let sumaDiaSem2 = [0, 0, 0, 0, 0];
+            ['PROD1-SEM2', 'PROD2-SEM2', 'PROD3-SEM2', 'PROD4-SEM2'].forEach(k => {
+                const hoja = dataAll[k];
+                if (hoja && hoja.clients) {
+                    hoja.clients.forEach(c => {
+                        (c.vals || []).forEach((v, idx) => {
+                            sumaDiaSem2[idx] += (Number(v) || 0);
+                        });
+                    });
+                }
+            });
+
+            const tbodySem2 = document.getElementById('tabla-resumen-sem2-body');
+            tbodySem2.innerHTML = '';
+            let totalSem2 = 0;
+            sumaDiaSem2.forEach((totalDia, idx) => {
+                totalSem2 += totalDia;
+                tbodySem2.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="p-3 border-r border-slate-200">${diasNombres[idx]} ${fechasSem2[idx]}</td>
+                        <td class="p-3 text-center font-bold ${totalDia > 0 ? 'text-blue-700' : 'text-slate-400'}">${totalDia}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('td-total-resumen-sem2').textContent = totalSem2;
+        }
+
+        // EVENTOS DE EDICIÓN EN TIEMPO REAL
+        document.getElementById('tabla-planificacion-body').addEventListener('change', async (e) => {
+            const dataAll = await getPlanificacionData();
+            const sheet = dataAll[hojaActiva];
+            if (e.target.classList.contains('input-plan-val')) {
+                const cIdx = Number(e.target.dataset.cidx);
+                const dIdx = Number(e.target.dataset.didx);
+                sheet.clients[cIdx].vals[dIdx] = Number(e.target.value) || 0;
+                await saveSheet(hojaActiva, sheet);
+                renderTabla();
+            }
+        });
+
+        document.getElementById('tabla-planificacion-body').addEventListener('click', async (e) => {
+            const dataAll = await getPlanificacionData();
+            const sheet = dataAll[hojaActiva];
+            if (e.target.classList.contains('btn-toggle-green')) {
+                const cIdx = Number(e.target.dataset.cidx);
+                const dIdx = Number(e.target.dataset.didx);
+                if (!sheet.clients[cIdx].green) sheet.clients[cIdx].green = [false, false, false, false, false];
+                sheet.clients[cIdx].green[dIdx] = !sheet.clients[cIdx].green[dIdx];
+                await saveSheet(hojaActiva, sheet);
+                renderTabla();
+            }
+        });
+
+        // CAMBIO DE PESTAÑAS
+        document.querySelectorAll('.tab-plan-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.tab-plan-btn').forEach(b => {
+                    b.className = "tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:bg-white/80";
+                });
+                e.target.className = "tab-plan-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-blue-900 shadow-sm";
+                hojaActiva = e.target.dataset.sheet;
+                renderTabla();
+            });
+        });
+
+        // MODAL CONFIGURAR FECHAS
+        async function abrirModalFechas() {
+            const dataAll = await getPlanificacionData();
+            const sheet = dataAll[hojaActiva];
+            if (!sheet) return;
+            sheet.dates.forEach((d, idx) => {
+                document.getElementById(`inp-fecha-${idx}`).value = d;
+            });
+            document.getElementById('modal-fechas').classList.remove('hidden');
+        }
+
+        async function guardarFechasColumnas() {
+            const dataAll = await getPlanificacionData();
+            const sheet = dataAll[hojaActiva];
+            if (sheet) {
+                sheet.dates = [
+                    document.getElementById('inp-fecha-0').value.trim(),
+                    document.getElementById('inp-fecha-1').value.trim(),
+                    document.getElementById('inp-fecha-2').value.trim(),
+                    document.getElementById('inp-fecha-3').value.trim(),
+                    document.getElementById('inp-fecha-4').value.trim()
+                ];
+                await saveSheet(hojaActiva, sheet);
+                document.getElementById('modal-fechas').classList.add('hidden');
+                renderTabla();
+            }
+        }
+
+        // INICIALIZACIÓN
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('lbl-tag-sem1').textContent = `Semana ${numSem1}:`;
+            document.getElementById('lbl-tag-sem2').textContent = `Semana ${numSem2}:`;
+
+            const btnDark = document.getElementById('btn-toggle-dark');
+            btnDark.addEventListener('click', () => {
+                document.body.classList.toggle('dark-theme');
+                const isDark = document.body.classList.contains('dark-theme');
+                localStorage.setItem('plan_dark_mode', isDark ? 'true' : 'false');
+                btnDark.innerHTML = isDark ? '☀️ <span class="hidden sm:inline">Modo Claro</span>' : '🌙 <span class="hidden sm:inline">Modo Oscuro</span>';
+            });
+
+            if (localStorage.getItem('plan_dark_mode') === 'true') {
+                document.body.classList.add('dark-theme');
+                btnDark.innerHTML = '☀️ <span class="hidden sm:inline">Modo Claro</span>';
+            }
+
+            if (sessionStorage.getItem('sesion_plan_activa') === 'true') {
+                document.getElementById('sec-login').classList.add('hidden');
+                document.getElementById('sec-planificacion').classList.remove('hidden');
+                document.getElementById('btn-logout').classList.remove('hidden');
+                renderTabla();
+            }
+        });
+    </script>
+</body>
+</html>
